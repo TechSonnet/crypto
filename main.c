@@ -1,5 +1,5 @@
 int test_sha3_512();
-void test_rc4();
+int test_rc4();
 int test_trivium();
 
 int main(void) {

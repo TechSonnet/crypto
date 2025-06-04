@@ -111,10 +111,10 @@ int test_trivium() {
     // Final result
     printf("\n========== Final Test Result ==========\n");
     if (test_passed) {
-        printf("ALL TESTS PASSED!\n");
+        printf("PASSED!\n");
         return 0;
     } else {
-        printf("TEST FAILED!\n");
+        printf("FAILED!\n");
         return -1;
     }
 }

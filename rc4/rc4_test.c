@@ -59,16 +59,19 @@ void test_rc4_vector(const char* name,
     for (uint32_t i = 0; i < len; i++) printf("%02X ", ciphertext[i]);
     printf("\n");
 
+    // Final result
+    printf("\n========== Final Test Result ==========\n");
+
     // 验证结果
     if (memcmp(expected, ciphertext, len) != 0) {
         passed = 0;
-        printf("--> FAIL\n");
+        printf("FAIL\n");
     } else {
-        printf("--> PASS\n");
+        printf("PASS\n");
     }
 }
 
-void test_rc4() {
+int test_rc4() {
     // 测试用例1
     {
         const uint8_t key[] = {TEST1_KEY};
@@ -92,4 +95,6 @@ void test_rc4() {
         const uint8_t expected[] = {TEST3_CIPHERTEXT};
         test_rc4_vector("Test 3 (64-bit key)", key, TEST3_KEY_LEN, plaintext, expected, TEST3_PLAINTEXT_LEN);
     }
+
+    return 1;
 }
