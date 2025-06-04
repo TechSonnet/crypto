@@ -22,8 +22,15 @@ set(TRIVIUM_SOURCES
         trivium/trivium_test.c
 )
 
+# 定义 ZUC_256 相关的源文件列表
+set(ZUC_256_SOURCES
+        zuc_256/zuc.c
+        zuc_256/zuc_test.c
+)
+
 add_executable(crypto_algorithm
         ${SHA3_512_SOURCES}
         ${RC4_SOURCES}
+        ${ZUC_256_SOURCES}
         ${TRIVIUM_SOURCES}
         main.c)

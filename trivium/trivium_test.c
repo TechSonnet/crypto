@@ -5,6 +5,8 @@
 
 /* ================= Test Vectors ================= */
 
+// the test vector form https://github.com/cantora/avr-crypto-lib/blob/master/testvectors/trivium-80.80.test-vectors?utm_source=chatgpt.com
+
 // Test Case 1: 80-bit key=0x80..00, 80-bit IV=0x00..00
 static const uint8_t TEST1_KEY[10] = {
     0x80, 0x00, 0x00, 0x00, 0x00,
@@ -111,10 +113,10 @@ int test_trivium() {
     // Final result
     printf("\n========== Final Test Result ==========\n");
     if (test_passed) {
-        printf("PASSED!\n");
+        printf("PASS!\n");
         return 0;
     } else {
-        printf("FAILED!\n");
+        printf("FAIL!\n");
         return -1;
     }
 }
