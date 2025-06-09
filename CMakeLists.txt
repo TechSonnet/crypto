@@ -30,8 +30,15 @@ set(TRIVIUM_SOURCES
 
 # 定义 ZUC_256 相关的源文件列表
 set(ZUC_256_SOURCES
-        zuc_256/zuc.c
+        zuc_256/zuc_256.c
         zuc_256/zuc_test.c
+)
+
+
+# 定义 ZUC_256 相关的源文件列表
+set(rc6_SOURCES
+        rc6/rc6.c
+        rc6/test_rc6.c
 )
 
 add_executable(crypto_algorithm
@@ -40,4 +47,5 @@ add_executable(crypto_algorithm
         ${RC4_SOURCES}
         ${ZUC_256_SOURCES}
         ${TRIVIUM_SOURCES}
+        ${rc6_SOURCES}
         main.c)
