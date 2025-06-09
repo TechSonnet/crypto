@@ -14,8 +14,9 @@
  * @param iv_len        初始向量长度（必须为10）
  * @param ciphertext    密文输出缓冲区
  * @param ciphertext_len 输出缓冲区长度（必须 >= plaintext_len）
+ * @return 成功返回1，失败返回0
  */
-void trivium_encrypt(
+int trivium_encrypt(
     const uint8_t *plaintext,
     size_t plaintext_len,
     const uint8_t key[10],
@@ -35,8 +36,9 @@ void trivium_encrypt(
  * @param iv_len        初始向量长度（必须为10）
  * @param plaintext     明文输出缓冲区
  * @param plaintext_len 输出缓冲区长度（必须 >= ciphertext_len）
+ * @return 成功返回1，失败返回0
  */
-void trivium_decrypt(
+int trivium_decrypt(
     const uint8_t *ciphertext,
     size_t ciphertext_len,
     const uint8_t key[10],

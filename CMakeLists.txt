@@ -26,6 +26,8 @@ set(TRIVIUM_SOURCES
 set(ZUC_256_SOURCES
         zuc_256/zuc.c
         zuc_256/zuc_test.c
+        utils/test_utils.h
+        utils/test_utils.c
 )
 
 add_executable(crypto_algorithm

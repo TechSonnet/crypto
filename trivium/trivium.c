@@ -106,8 +106,9 @@ void trivium_init(const void *key, uint16_t keysize_b,
  * @param iv_len        初始向量长度（必须为10）
  * @param ciphertext    密文输出缓冲区
  * @param ciphertext_len 输出缓冲区长度（必须 >= plaintext_len）
+ * @return 成功返回1，失败返回0
  */
-void trivium_encrypt(
+int trivium_encrypt(
 	const uint8_t *plaintext,
 	size_t plaintext_len,
 	const uint8_t key[10],
@@ -117,13 +118,15 @@ void trivium_encrypt(
 	uint8_t *ciphertext,
 	size_t ciphertext_len)
 {
+	// 保持原始参数检查逻辑
+	if (key_len != 10 || iv_len != 10 || ciphertext_len < plaintext_len) {
+		return 0; // 失败返回0
+	}
+
+	// 以下是您原始代码中的实现部分
+	// 假设trivium_ctx_t已在其他地方定义
 	trivium_ctx_t ctx;
 	size_t i;
-
-	// 参数检查
-	if (key_len != 10 || iv_len != 10 || ciphertext_len < plaintext_len) {
-		return;
-	}
 
 	// 初始化上下文
 	trivium_init(key, 80, iv, 80, &ctx);
@@ -132,6 +135,8 @@ void trivium_encrypt(
 	for (i = 0; i < plaintext_len; i++) {
 		ciphertext[i] = plaintext[i] ^ trivium_getbyte(&ctx);
 	}
+
+	return 1; // 成功返回1
 }
 
 /**
@@ -144,8 +149,9 @@ void trivium_encrypt(
  * @param iv_len        初始向量长度（必须为10）
  * @param plaintext     明文输出缓冲区
  * @param plaintext_len 输出缓冲区长度（必须 >= ciphertext_len）
+ * @return 成功返回1，失败返回0
  */
-void trivium_decrypt(
+int trivium_decrypt(
 	const uint8_t *ciphertext,
 	size_t ciphertext_len,
 	const uint8_t key[10],
@@ -155,9 +161,14 @@ void trivium_decrypt(
 	uint8_t *plaintext,
 	size_t plaintext_len)
 {
-	// 流密码的解密与加密过程相同
-	trivium_encrypt(ciphertext, ciphertext_len,
-				   key, key_len,
-				   iv, iv_len,
-				   plaintext, plaintext_len);
+	// 保持原始参数检查逻辑
+	if (key_len != 10 || iv_len != 10 || plaintext_len < ciphertext_len) {
+		return 0; // 失败返回0
+	}
+
+	// 直接调用加密函数（保持原始对称特性）
+	return trivium_encrypt(ciphertext, ciphertext_len,
+						 key, key_len,
+						 iv, iv_len,
+						 plaintext, plaintext_len);
 }

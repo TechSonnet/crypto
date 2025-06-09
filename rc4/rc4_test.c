@@ -2,8 +2,14 @@
 #include <string.h>
 #include <stdint.h>
 #include "rc4.h"
+#include "../utils/test_utils.h"
 
 #define TEST_SIZE 16
+
+/**
+ * RC4 has no fixed key length requirement, so we use three official test vectors
+ * with different key lengths (RFC 6229)
+ */
 
 /* ================ Test Vectors (RFC 6229) ================ */
 static const uint8_t TEST1_KEY[] = {0x01, 0x02, 0x03, 0x04, 0x05};
@@ -38,76 +44,64 @@ static TestCase test_cases[] = {
 };
 /* ================ End of Test Vectors ================ */
 
-void print_hex(const char* label, const uint8_t* data, int len) {
-    printf("%s: ", label);  // 冒号后加一个空格
-    for (int i = 0; i < len; i++) {
-        printf("%02X", data[i]);
-    }
-    printf("\n");
-}
-
-void print_test_header(const char* title) {
-    printf("\n=== %s ===\n", title);
-}
-
 void test_keystream() {
-    print_test_header("RC4 密钥流测试");
-    
+    print_test_header("RC4 Keystream Test");
+
     uint8_t zero_plaintext[TEST_SIZE] = {0};
     uint8_t output[TEST_SIZE];
-    
+
     for (int i = 0; i < sizeof(test_cases)/sizeof(TestCase); i++) {
         TestCase tc = test_cases[i];
-        printf("\n测试用例 %d: %s\n", i+1, tc.name);
-        
-        print_hex("密钥", tc.key, tc.key_len);
-        print_hex("期望密钥流", tc.keystream, TEST_SIZE);
-        
+        printf("\nTest Case %d: %s\n", i+1, tc.name);
+
+        print_hex("Key", tc.key, tc.key_len);
+        print_hex("Expected Keystream", tc.keystream, TEST_SIZE);
+
         if (!rc4_encrypt(zero_plaintext, TEST_SIZE, tc.key, tc.key_len, output, TEST_SIZE)) {
-            printf("错误: 加密失败\n");
+            printf("Error: Encryption failed\n");
             continue;
         }
-        print_hex("实际密钥流", output, TEST_SIZE);
-        
-        printf("结果: %s\n", memcmp(output, tc.keystream, TEST_SIZE) ? "FAIL!" : "PASS!");
+        print_hex("Actual Keystream", output, TEST_SIZE);
+
+        printf("Result: %s\n", memcmp(output, tc.keystream, TEST_SIZE) ? "FAIL!" : "PASS!");
     }
 }
 
 void test_symmetry() {
-    print_test_header("RC4 加解密测试");
-    
-    const uint8_t plaintext[] = "RC4测试数据";
+    print_test_header("RC4 Encryption/Decryption Test");
+
+    const uint8_t plaintext[] = "RC4 test data";
     const int plaintext_len = sizeof(plaintext)-1;
     uint8_t ciphertext[plaintext_len];
     uint8_t decrypted[plaintext_len];
-    
+
     for (int i = 0; i < sizeof(test_cases)/sizeof(TestCase); i++) {
         TestCase tc = test_cases[i];
-        printf("\n测试用例 %d: %s\n", i+1, tc.name);
-        
-        print_hex("密钥", tc.key, tc.key_len);
-        print_hex("明文", plaintext, plaintext_len);
-        
+        printf("\nTest Case %d: %s\n", i+1, tc.name);
+
+        print_hex("Key", tc.key, tc.key_len);
+        print_hex("Plaintext", plaintext, plaintext_len);
+
         if (!rc4_encrypt(plaintext, plaintext_len, tc.key, tc.key_len, ciphertext, plaintext_len)) {
-            printf("错误: 加密失败\n");
+            printf("Error: Encryption failed\n");
             continue;
         }
-        print_hex("密文", ciphertext, plaintext_len);
-        
+        print_hex("Ciphertext", ciphertext, plaintext_len);
+
         if (!rc4_decrypt(ciphertext, plaintext_len, tc.key, tc.key_len, decrypted, plaintext_len)) {
-            printf("错误: 解密失败\n");
+            printf("Error: Decryption failed\n");
             continue;
         }
-        print_hex("解密结果", decrypted, plaintext_len);
-        
-        printf("结果: %s\n", memcmp(plaintext, decrypted, plaintext_len) ? "FAIL!" : "PASS!");
+        print_hex("Decrypted Text", decrypted, plaintext_len);
+
+        printf("Result: %s\n", memcmp(plaintext, decrypted, plaintext_len) ? "FAIL!" : "PASS!");
     }
 }
 
 int test_rc4() {
-    printf("\n===== RC4 测试 =====\n");
+    printf("\n===== RC4 Test Suite =====\n");
     test_keystream();
     test_symmetry();
-    printf("\n测试结束\n");
+    printf("\nTesting completed\n");
     return 0;
 }

@@ -2,23 +2,24 @@
 #include <stdint.h>
 #include <string.h>
 #include "trivium.h"
+#include "../utils/test_utils.h"
 
-/* ================= Test Vectors ================= */
+#define TEST_SIZE 64
 
-// the test vector form https://github.com/cantora/avr-crypto-lib/blob/master/testvectors/trivium-80.80.test-vectors?utm_source=chatgpt.com
-
-// Test Case 1: 80-bit key=0x80..00, 80-bit IV=0x00..00
-static const uint8_t TEST1_KEY[10] = {
+/**
+ *  测试向量来源：
+ */
+static const uint8_t TEST_KEY[10] = {
     0x80, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8_t TEST1_IV[10] = {
+static const uint8_t TEST_IV[10] = {
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8_t TEST1_KEYSTREAM[64] = {
+static const uint8_t EXPECTED_KEYSTREAM[TEST_SIZE] = {
     0x38, 0xEB, 0x86, 0xFF, 0x73, 0x0D, 0x7A, 0x9C,
     0xAF, 0x8D, 0xF1, 0x3A, 0x44, 0x20, 0x54, 0x0D,
     0xBB, 0x7B, 0x65, 0x14, 0x64, 0xC8, 0x75, 0x01,
@@ -30,93 +31,99 @@ static const uint8_t TEST1_KEYSTREAM[64] = {
 };
 
 
+void print_hex_compact(const char* label, const uint8_t* data, size_t len) {
+    printf("%s: ", label);
+    for (size_t i = 0; i < len; i++) {
+        printf("%02X", data[i]);
+    }
+    printf("\n");
+}
+
+
+int test_trivium_keystream() {
+    print_test_header("Trivium Keystream Verification");
+
+    uint8_t plaintext[TEST_SIZE] = {0};
+    uint8_t ciphertext[TEST_SIZE];
+
+    if (!trivium_encrypt(plaintext, TEST_SIZE,
+                         TEST_KEY, sizeof(TEST_KEY),
+                         TEST_IV, sizeof(TEST_IV),
+                         ciphertext, TEST_SIZE)) {
+        printf("Error: Encryption failed\n");
+        return 0;
+    }
+
+    print_hex_compact("Key", TEST_KEY, sizeof(TEST_KEY));
+    print_hex_compact("IV", TEST_IV, sizeof(TEST_IV));
+    print_hex_compact("Expected Keystream", EXPECTED_KEYSTREAM, 16);
+    print_hex_compact("Actual Keystream", ciphertext, 16);
+
+    if (memcmp(ciphertext, EXPECTED_KEYSTREAM, TEST_SIZE) == 0) {
+        printf("Result: PASS\n");
+    } else {
+        printf("Result: FAIL\n");
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            if (ciphertext[i] != EXPECTED_KEYSTREAM[i]) {
+                printf("First mismatch at [%d]: Expected = 0x%02X, Actual = 0x%02X\n",
+                      i, EXPECTED_KEYSTREAM[i], ciphertext[i]);
+                break;
+            }
+        }
+    }
+
+    return 1;
+}
+
+
+int test_trivium_encryption_symmetry() {
+    print_test_header("Trivium Encryption/Decryption Symmetry");
+
+    const char* message = "Test message for Trivium";
+    size_t message_len = strlen(message);
+    uint8_t ciphertext[128] = {0};
+    uint8_t decrypted[128] = {0};
+
+    printf("Original plaintext: %s\n", message);
+    print_hex_compact("Plaintext (HEX)", (const uint8_t*)message, message_len);
+
+    if (!trivium_encrypt((const uint8_t*)message, message_len,
+                         TEST_KEY, sizeof(TEST_KEY),
+                         TEST_IV, sizeof(TEST_IV),
+                         ciphertext, message_len)) {
+        printf("Error: Encryption failed\n");
+        return 0;
+    }
+
+    if (!trivium_decrypt(ciphertext, message_len,
+                         TEST_KEY, sizeof(TEST_KEY),
+                         TEST_IV, sizeof(TEST_IV),
+                         decrypted, message_len)) {
+        printf("Error: Decryption failed\n");
+        return 0;
+    }
+
+    print_hex_compact("Ciphertext", ciphertext, message_len);
+    printf("Decrypted text: %s\n", decrypted);
+
+    if (memcmp(message, decrypted, message_len) == 0) {
+        printf("Result: PASS\n");
+    } else {
+        printf("Result: FAIL\n");
+    }
+
+    return 1;
+}
+
 
 int test_trivium() {
-    uint8_t plaintext[64] = {0}; // All-zero plaintext
-    uint8_t ciphertext[64];
-    uint8_t decrypted[64];
-    int test_passed = 1;
+    printf("\n=== Starting Trivium Tests ===\n\n");
 
-    // ========== Test Case 1 ==========
-    {
-        printf("\n========== Test Case 1 ==========\n");
+    test_trivium_keystream();
+    printf("\n");
+    test_trivium_encryption_symmetry();
 
-        // Print key (10 bytes)
-        printf("Key (10 bytes): ");
-        for (int i = 0; i < sizeof(TEST1_KEY); i++) {
-            printf("%02X ", TEST1_KEY[i]);
-        }
-        printf("\n");
-
-        // Print IV (10 bytes)
-        printf("IV (10 bytes): ");
-        for (int i = 0; i < sizeof(TEST1_IV); i++) {
-            printf("%02X ", TEST1_IV[i]);
-        }
-        printf("\n");
-
-        // Perform encryption
-        trivium_encrypt(
-            plaintext, sizeof(plaintext),
-            TEST1_KEY, sizeof(TEST1_KEY),
-            TEST1_IV, sizeof(TEST1_IV),
-            ciphertext, sizeof(ciphertext)
-        );
-
-        // Print ciphertext (first 16 bytes)
-        printf("Ciphertext (first 16 bytes): ");
-        for (int i = 0; i < 16; i++) {
-            printf("%02X ", ciphertext[i]);
-        }
-        printf("...\n");
-
-        // Verify encryption
-        if (memcmp(ciphertext, TEST1_KEYSTREAM, sizeof(ciphertext)) == 0) {
-            printf("[PASS] Encryption\n");
-        } else {
-            printf("[FAIL] Encryption\n");
-            test_passed = 0;
-            for (int j = 0; j < 8; j++) { // Print first 8 mismatches
-                if (ciphertext[j] != TEST1_KEYSTREAM[j]) {
-                    printf("First mismatch at %d: Expected=%02X Actual=%02X\n",
-                        j, TEST1_KEYSTREAM[j], ciphertext[j]);
-                }
-            }
-        }
-
-        // Perform decryption
-        trivium_decrypt(
-            ciphertext, sizeof(ciphertext),
-            TEST1_KEY, sizeof(TEST1_KEY),
-            TEST1_IV, sizeof(TEST1_IV),
-            decrypted, sizeof(decrypted)
-        );
-
-        // Verify decryption
-        if (memcmp(plaintext, decrypted, sizeof(plaintext)) == 0) {
-            printf("[PASS] Decryption\n");
-        } else {
-            printf("[FAIL] Decryption\n");
-            test_passed = 0;
-            for (int j = 0; j < sizeof(plaintext); j++) {
-                if (decrypted[j] != plaintext[j]) {
-                    printf("First mismatch at %d: Expected=%02X Actual=%02X\n",
-                        j, plaintext[j], decrypted[j]);
-                    break;
-                }
-            }
-        }
-    }
-
-
-
-    // Final result
-    printf("\n========== Final Test Result ==========\n");
-    if (test_passed) {
-        printf("PASS!\n");
-        return 0;
-    } else {
-        printf("FAIL!\n");
-        return -1;
-    }
+    printf("\n=== Trivium Tests Completed ===\n");
+    return 0;
 }
