@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "zuc_256.h"
+#include "zuc.h"
 #include "../utils/test_utils.h"
 
 #define TEST_BLOCK_COUNT 20  // 20 uint32_t blocks = 80 bytes
