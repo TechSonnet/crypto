@@ -4,6 +4,12 @@ project(crypto_algorithm C)
 set(CMAKE_C_STANDARD 99)
 
 
+# 定义 ZUC_256 相关的源文件列表
+set(UTILS_SOURCES
+        utils/test_utils.h
+        utils/test_utils.c
+)
+
 # 定义 SHA3_512 相关的源文件列表
 set(SHA3_512_SOURCES
         sha3_512/sha3_512.c
@@ -26,11 +32,10 @@ set(TRIVIUM_SOURCES
 set(ZUC_256_SOURCES
         zuc_256/zuc.c
         zuc_256/zuc_test.c
-        utils/test_utils.h
-        utils/test_utils.c
 )
 
 add_executable(crypto_algorithm
+        ${UTILS_SOURCES}
         ${SHA3_512_SOURCES}
         ${RC4_SOURCES}
         ${ZUC_256_SOURCES}

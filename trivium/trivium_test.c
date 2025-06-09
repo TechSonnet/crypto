@@ -31,14 +31,6 @@ static const uint8_t EXPECTED_KEYSTREAM[TEST_SIZE] = {
 };
 
 
-void print_hex_compact(const char* label, const uint8_t* data, size_t len) {
-    printf("%s: ", label);
-    for (size_t i = 0; i < len; i++) {
-        printf("%02X", data[i]);
-    }
-    printf("\n");
-}
-
 
 int test_trivium_keystream() {
     print_test_header("Trivium Keystream Verification");

@@ -1093,69 +1093,82 @@ void test_zuc256_encryption(
 }
 
 /**
- * @brief ZUC256流加密接口（仅参数顺序调整，功能完全不变）
- * @param plaintext     明文数据
- * @param plaintext_len 明文长度（字节）
- * @param key           输入密钥（32字节固定长度）
- * @param key_len       密钥长度（必须为32）
- * @param iv            输入初始向量（23字节固定长度）
- * @param iv_len        初始向量长度（必须为23）
- * @param ciphertext    密文输出缓冲区
- * @param ciphertext_len 输出缓冲区长度（新参数，可忽略）
+ * @brief ZUC256 stream encryption interface
+ * @param plaintext      Plaintext data
+ * @param plaintext_len  Plaintext length (bytes)
+ * @param key            Input key (32 bytes fixed length)
+ * @param key_len        Key length (must be 32)
+ * @param iv             Initialization vector (23 bytes fixed length)
+ * @param iv_len         IV length (must be 23)
+ * @param ciphertext     Ciphertext output buffer
+ * @param ciphertext_len Output buffer length (must be >= plaintext_len)
+ * @return 1 if successful, 0 if failed
  */
-void zuc256_encrypt(
-	const uint8_t *plaintext,
-	size_t plaintext_len,
-	const uint8_t key[32],
-	size_t key_len,
-	const uint8_t iv[23],
-	size_t iv_len,
-	uint8_t *ciphertext,
-	size_t ciphertext_len)
+int zuc256_encrypt(
+    const uint8_t *plaintext,
+    size_t plaintext_len,
+    const uint8_t key[32],
+    size_t key_len,
+    const uint8_t iv[23],
+    size_t iv_len,
+    uint8_t *ciphertext,
+    size_t ciphertext_len)
 {
+    // Validate all parameters
+    if (!plaintext || !ciphertext || !key || !iv ||
+        key_len != 32 || iv_len != 23 ||
+        plaintext_len == 0 || ciphertext_len < plaintext_len) {
+        return 0;
+    }
 
-	if (key_len != 32 || iv_len != 23) {
-		return; // 或定义错误处理
-	}
+    /* Actual encryption logic (unchanged) */
+    ZUC_STATE state;
+    zuc256_init(&state, key, iv);
 
-	/* 实际加密逻辑（完全不变）*/
-	ZUC_STATE state;
-	zuc256_init(&state, key, iv);
+    uint32_t keystream[(plaintext_len + 3)/4];
+    zuc_generate_keystream(&state, (plaintext_len + 3)/4, keystream);
 
-	uint32_t keystream[(plaintext_len + 3)/4];
-	zuc_generate_keystream(&state, (plaintext_len + 3)/4, keystream);
+    for (size_t i = 0; i < plaintext_len; i++) {
+        ciphertext[i] = plaintext[i] ^ ((uint8_t*)keystream)[i];
+    }
 
-	for (size_t i = 0; i < plaintext_len; i++) {
-		ciphertext[i] = plaintext[i] ^ ((uint8_t*)keystream)[i];
-	}
+    return 1;
 }
 
 /**
- * @brief ZUC256流解密接口（参数顺序对称调整）
- * @param ciphertext     密文数据
- * @param ciphertext_len 密文长度（字节）
- * @param key            输入密钥（32字节固定长度）
- * @param key_len        密钥长度（必须为32）
- * @param iv             输入初始向量（23字节固定长度）
- * @param iv_len         初始向量长度（必须为23）
- * @param plaintext      明文输出缓冲区
- * @param plaintext_len   输出缓冲区长度（新参数，可忽略）
+ * @brief ZUC256 stream decryption interface
+ * @param ciphertext     Ciphertext data
+ * @param ciphertext_len Ciphertext length (bytes)
+ * @param key            Input key (32 bytes fixed length)
+ * @param key_len        Key length (must be 32)
+ * @param iv            Initialization vector (23 bytes fixed length)
+ * @param iv_len         IV length (must be 23)
+ * @param plaintext      Plaintext output buffer
+ * @param plaintext_len  Output buffer length (must be >= ciphertext_len)
+ * @return 1 if successful, 0 if failed
  */
-void zuc256_decrypt(
-	const uint8_t *ciphertext,
-	size_t ciphertext_len,
-	const uint8_t key[32],
-	size_t key_len,
-	const uint8_t iv[23],
-	size_t iv_len,
-	uint8_t *plaintext,
-	size_t plaintext_len)
+int zuc256_decrypt(
+    const uint8_t *ciphertext,
+    size_t ciphertext_len,
+    const uint8_t key[32],
+    size_t key_len,
+    const uint8_t iv[23],
+    size_t iv_len,
+    uint8_t *plaintext,
+    size_t plaintext_len)
 {
-	/* 解密直接调用加密（流密码特性）*/
-	zuc256_encrypt(
-		ciphertext, ciphertext_len,
-		key, key_len,
-		iv, iv_len,
-		plaintext, plaintext_len
-	);
+    // Validate all parameters
+    if (!ciphertext || !plaintext || !key || !iv ||
+        key_len != 32 || iv_len != 23 ||
+        ciphertext_len == 0 || plaintext_len < ciphertext_len) {
+        return 0;
+    }
+
+    /* Decryption is identical to encryption for stream ciphers */
+    return zuc256_encrypt(
+        ciphertext, ciphertext_len,
+        key, key_len,
+        iv, iv_len,
+        plaintext, plaintext_len
+    );
 }
