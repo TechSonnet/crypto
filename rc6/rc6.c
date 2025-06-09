@@ -3,10 +3,26 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #define P32 0xB7E15163
 #define Q32 0x9E3779B9
 #define LG_W 5
+
+
+#define ROUNDS      20      // Количество раундов
+#define KEY_LENGTH  256     // Длина ключа
+#define W           32      // Длина машинного слова в битах
+
+
+
+// Контекст RC6
+typedef struct rc6_ctx
+{
+    uint8_t r;      // Число раундов, по умолчанию 20
+    uint32_t *S;    // 32-битные раундовые ключи
+} rc6_ctx_t;
+
 
 rc6_ctx_t* ak_rc6_ctx_create_new()
 {
@@ -108,3 +124,37 @@ void ak_rc6_ctx_decrypt(rc6_ctx_t *ctx, void *block)
     ((uint32_t *)block)[2]=C;
     ((uint32_t *)block)[3]=D;
 }
+// 添加在 rc6.c 文件末尾
+
+void rc6_encrypt_block(uint8_t *key, uint8_t *plaintext, uint8_t *ciphertext)
+{
+    rc6_ctx_t *ctx = ak_rc6_ctx_create_new();
+    uint8_t key_copy[32];
+    memcpy(key_copy, key, 32); // 避免 key_schedule 修改原始 key
+    ak_rc6_ctx_key_schedule(ctx, key_copy);
+
+    uint8_t block[16];
+    memcpy(block, plaintext, 16);
+    ak_rc6_ctx_encrypt(ctx, block);
+    memcpy(ciphertext, block, 16);
+
+    ak_rc6_ctx_free(ctx);
+}
+
+void rc6_decrypt_block(uint8_t *key, uint8_t *ciphertext, uint8_t *plaintext)
+{
+    rc6_ctx_t *ctx = ak_rc6_ctx_create_new();
+    uint8_t key_copy[32];
+    memcpy(key_copy, key, 32); // 避免 key_schedule 修改原始 key
+    ak_rc6_ctx_key_schedule(ctx, key_copy);
+
+    uint8_t block[16];
+    memcpy(block, ciphertext, 16);
+    ak_rc6_ctx_decrypt(ctx, block);
+    memcpy(plaintext, block, 16);
+
+    ak_rc6_ctx_free(ctx);
+}
+
+
+
