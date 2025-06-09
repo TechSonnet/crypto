@@ -4,42 +4,43 @@ project(crypto_algorithm C)
 set(CMAKE_C_STANDARD 99)
 
 
-# ╤╗рЕ ZUC_256 оЮ╧ь╣дт╢нд╪Чап╠М
+# О©╫О©╫О©╫О©╫ ZUC_256 О©╫О©╫ь╣О©╫т╢О©╫д╪О©╫О©╫п╠О©╫
 set(UTILS_SOURCES
         utils/test_utils.h
         utils/test_utils.c
 )
 
-# ╤╗рЕ SHA3_512 оЮ╧ь╣дт╢нд╪Чап╠М
+# О©╫О©╫О©╫О©╫ SHA3_512 О©╫О©╫ь╣О©╫т╢О©╫д╪О©╫О©╫п╠О©╫
 set(SHA3_512_SOURCES
         sha3_512/sha3_512.c
         sha3_512/sha3_512_test.c
 )
 
-# ╤╗рЕ RC4 оЮ╧ь╣дт╢нд╪Чап╠М
+# О©╫О©╫О©╫О©╫ RC4 О©╫О©╫ь╣О©╫т╢О©╫д╪О©╫О©╫п╠О©╫
 set(RC4_SOURCES
         rc4/rc4.c
         rc4/rc4_test.c
 )
 
-# ╤╗рЕ TRIVIUM оЮ╧ь╣дт╢нд╪Чап╠М
+# О©╫О©╫О©╫О©╫ TRIVIUM О©╫О©╫ь╣О©╫т╢О©╫д╪О©╫О©╫п╠О©╫
 set(TRIVIUM_SOURCES
         trivium/trivium.c
         trivium/trivium_test.c
 )
 
-# ╤╗рЕ ZUC_256 оЮ╧ь╣дт╢нд╪Чап╠М
+# О©╫О©╫О©╫О©╫ ZUC_256 О©╫О©╫ь╣О©╫т╢О©╫д╪О©╫О©╫п╠О©╫
 set(ZUC_256_SOURCES
         zuc_256/zuc_256.c
         zuc_256/zuc_test.c
 )
 
 
-# ╤╗рЕ ZUC_256 оЮ╧ь╣дт╢нд╪Чап╠М
+# О©╫О©╫О©╫О©╫ ZUC_256 О©╫О©╫ь╣О©╫т╢О©╫д╪О©╫О©╫п╠О©╫
 set(rc6_SOURCES
         rc6/rc6.c
-        rc6/test_rc6.c
+        rc6/rc6_test.c
 )
+
 
 add_executable(crypto_algorithm
         ${UTILS_SOURCES}
